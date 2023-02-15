@@ -1,8 +1,12 @@
-import React, {useRef, useEffect, useState, useMemo } from "react";
+
+import React, { useEffect, useState } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './ForceGraph.css'
 // Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Button } from '@mui/material';
+
 
 
 
@@ -11,8 +15,7 @@ export default function ForceGraph() {
     // sample data
     // "Attach (source) to (target)" for links
     // Not sure if label is needed
-    const exampleData = useMemo(
-        () => ({
+    const exampleData = {
         nodes: [
             { id: 'Protein 1', label: 'Protein' },
             { id: 'Protein 2', label: 'Protein 2' },
@@ -32,11 +35,9 @@ export default function ForceGraph() {
             { source: 'Protein 7', target: 'Protein 5', value: 2 },
             { source: 'Protein 6', target: 'Protein 8', value: 1 },
         ]
-    }))
+    }
 
-    const graphRef = useRef(null);
-
-    const [selectedNode, setSelectedNode] = useState(null);
+    const [organName, setOrganName] = useState('');
 
     // So we can use react router
     const navigate = useNavigate();
@@ -44,28 +45,34 @@ export default function ForceGraph() {
     // To be used when a node is clicked
     const handleNodeClick = (node) => {
         console.log('Node has been clicked');
-        setSelectedNode(node);
+        navigate('/protein-details', {state: {organName: organName}});
     };
 
+    const location = useLocation();
+
     useEffect(() => {
-        if (selectedNode && graphRef.current) {
-          graphRef.current.d3Force('charge').strength(-100);
+        if (location) {
+            console.log(location.state.organName);
+            setOrganName(location.state.organName);
         }
-      }, [selectedNode, graphRef]);
+    }, [location])
+    
 
     return (
         <div>
             <div className='button-div'>
-                <button onClick={() => {
-                    navigate('/body-diagram')
-                }}>
+                <Button
+                    variant='contained'
+                    onClick={() => {
+                        navigate('/body-diagram')
+                    }}>
                     Go back to body diagram
-                </button>
+                </Button>
             </div>
+            <h1 style={{marginTop: '5vh', marginBottom: '-10vh'}}>{organName} Cancer PPI Network</h1>
             <div class='container-fluid d-flex'>
                 <div className='col-md-9'>
                     <ForceGraph2D
-                        ref={graphRef}
                         graphData={exampleData}
                         linkWidth={link => link.value}
                         //nodeAutoColorBy="group"
@@ -99,15 +106,8 @@ export default function ForceGraph() {
                         // When the node is clicked
                         onNodeClick={handleNodeClick}
                     />
-                    {selectedNode && (
-                 <div style={{ position: 'fixed', right: 30, top: 30 }}>
-                    <h3>Node Information</h3>
-                <p>ID: {selectedNode.id}</p>
-                    <p>Data: {JSON.stringify(selectedNode.data)}</p>
                 </div>
-                    )}
-                </div>
-                <div className='col-md-3' style={{border:'1px solid black'}}>
+                <div className='col-md-3' style={{ border: '1px solid black' }}>
                     <h2>Cancer Subtype</h2>
                 </div>
             </div>
