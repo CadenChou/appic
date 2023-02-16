@@ -3,10 +3,7 @@ import java.net.http.HttpClient;
 import java.net.URI;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
-import java.util.ArrayList;
-import java.net.http.HttpRequest.BodyPublishers;
 
 /*
 * This class will send a get request to the Human Protein Atlas API
@@ -43,7 +40,7 @@ public class HumanProteinAtlasAPI {
     * https://www.proteinatlas.org/about/help/dataaccess for parameters and search characteristics
     * @return array data from search results
     */
-    public JSONArray getRequest(String geneName, String searchCharateristics) throws Exception {
+    public Object getRequest(String geneName, String searchCharateristics) throws Exception {
         // Build search URI
         String searchURI = "https://www.proteinatlas.org/api/search_download.php?search="
             + geneName + "&format="
@@ -62,13 +59,10 @@ public class HumanProteinAtlasAPI {
         String responseStr = response.body();
 
         // Response to JSONArray
-        JSONObject myObj;
         JSONParser parser = new JSONParser();
         Object json = parser.parse(responseStr);
-        JSONArray array = new JSONArray();
-        array.add(json);
 
-        return array;
+        return json;
     }
 
     public static void main(String args[]) throws Exception {
@@ -79,9 +73,9 @@ public class HumanProteinAtlasAPI {
 
         // Make a request for a gene
         //JSONArray p53Array = myHPACaller.getRequest("p53", "g");
-        JSONArray gfapArray = myHPACaller.getRequest("GFAP", "g,pe");
+        Object gfapResults = myHPACaller.getRequest("GFAP", "g,pe");
 
 
-        System.out.println(gfapArray);
+        System.out.println(gfapResults);
     }
 }

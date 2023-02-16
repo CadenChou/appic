@@ -1,19 +1,25 @@
 /*
+ * This makes an API call to GProfiler, which is key for biolfunction
+ * 
+ * @author Benjamin Ahn
+ * @version 1.0
+ * 
+ * General commandline runtime notes
+ * 
 * Runs in terminal as java GProfilerAPI.java
 export JAVA_HOME=/usr/share/java
 export PATH=$PATH:$JAVA_HOME/bin
 export JSON_JAVA=/home/benjamin/Documents/CS/json
 export CLASSPATH=$CLASSPATH:$JSON_JAVA/json-simple-1.1.1.jar:.
-
-*/
+ *
+ * 
+ */
 
 //package net.javaguides.network;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.io.InputStream;
 import java.io.DataOutputStream;
 import org.json.simple.parser.JSONParser;
 import java.util.ArrayList;
@@ -27,7 +33,7 @@ public class GProfilerAPI {
      * This method sends a request to G:GOSt, and receives A gene-ontology result
      * @param list of gene objects
      */
-    public static ArrayList<String> getRequest(ArrayList<Gene> geneSet) throws Exception {
+    public ArrayList<String> getRequest(ArrayList<Gene> geneSet) throws Exception {
         // Build url search string
         String urly = "https://biit.cs.ut.ee/gprofiler/api/gost/profile/";
         URL obj = new URL(urly);

@@ -1,5 +1,3 @@
-import java.io.FileNotFoundException;
-import org.json.simple.*;
 import java.util.ArrayList;
 
 /*
@@ -33,7 +31,7 @@ public class TestingCancerSubtype {
 
         // initialize HPA api caller object
         HumanProteinAtlasAPI myHPACaller = new HumanProteinAtlasAPI("json");
-        JSONArray geneInfoAboutASingleGene = myHPACaller.getRequest(firstGeneName, "g");
+        Object geneInfoAboutASingleGene = myHPACaller.getRequest(firstGeneName, "g");
         System.out.println(geneInfoAboutASingleGene);
 
 
