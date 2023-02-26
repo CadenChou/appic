@@ -1,0 +1,19 @@
+Enter these commands on the terminal
+1. nvm install 16
+    adds the packages nodejs and npm
+2. mvn clean package
+    compiles and builds WAR file for web server deployment
+
+Next step, start up a tomcat server (look at the left sidebar)
+On the apache-tomcat server, add deployment. this should be the WAR file (typically stored in target folder)
+Start the server
+Publish full to server
+Server actions -> view in browser
+Go to http://localhost:blahblah.../HelloServlet
+
+follow these instructions to setup a server: https://nyumbani-coder.hashnode.dev/how-to-create-java-servlet-with-tomcat-and-maven-in-vs-code
+
+use "nvm clean package"
+then upload the war file to the tomcat server
+
+In the browser, must navigate to http://localhost:8080/servlet-1.0-SNAPSHOT/HelloServlet
