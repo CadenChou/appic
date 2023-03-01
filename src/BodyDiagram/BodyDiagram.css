@@ -5,17 +5,17 @@
 
 .body-diagram-image {
     width: 25%;
+}
+
+.organ-images-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
     right: 37%;
     position: absolute;
 }
 
-.organ-images-container {
-    position: relative;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    border: '1px solid black'
-}
 
 .organ-image {
     position: absolute;

@@ -3,6 +3,7 @@ import { Stage, Layer, Image } from 'react-konva';
 import { useNavigate } from 'react-router-dom';
 import useImage from 'use-image';
 import './BodyDiagram.css';
+
 import { Grid, Button } from '@mui/material';
 import { motion } from "framer-motion"
 
@@ -126,48 +127,30 @@ export default function BodyDiagram() {
                     Go back to landing page
                 </Button>
             </div>
+
+            {/* <div className='body-diagram-container'>
+                <img
+                    src='https://i.pinimg.com/736x/6c/be/78/6cbe78f45758fada70c7bd3671e0b3f5--body-template-the-human-body.jpg'
+                    alt='Body Diagram'
+                    className='body-diagram-image'
+                ></img>
+                <div className='organ-images-container'>
+                    <img
+                        src='https://static.vecteezy.com/system/resources/thumbnails/005/155/375/small_2x/lungs-human-icon-outline-black-color-illustration-flat-style-image-vector.jpg'
+                        alt='Lungs'
+                        className='organ-image-lungs'
+                    ></img>
+                </div>
+
+
+            </div>
+
+ */}
+
+
+
         </div>
     )
 }
 
 
-{/* <div style={{position: 'relative', border: '1px solid black', width: '100vw', height: '90vh', alignItems: 'center'}}>
-            
-                <img
-                    src='https://static.vecteezy.com/system/resources/thumbnails/005/155/375/small_2x/lungs-human-icon-outline-black-color-illustration-flat-style-image-vector.jpg'
-                    alt='Lungs'
-                    style={{zIndex: 1, position: 'absolute', width: '10%', right: '45%', top: '20%'}}
-                ></img>
-
-                <img
-                    src='https://i.pinimg.com/736x/6c/be/78/6cbe78f45758fada70c7bd3671e0b3f5--body-template-the-human-body.jpg'
-                    alt='Body Diagram'
-                    style={{width: '30%', position: 'absolute', right: '35%'}}
-                    ></img>
-
-            </div> */}
-
-
-
-{/* <Stage width={window.innerWidth} height={window.innerHeight} ref={stageRef}>
-                <Layer>
-                    <Image
-                        image={bodyImage} // image of the human body
-                        name="body"
-                        onClick={handleClick}
-                        onLoad={() => setIsImagesLoaded(true)}
-                        x={bodyX}
-                        scaleX={0.4}
-                        scaleY={0.4}
-                    />
-                    <Image
-                        image={lungImage} // image of the lungs
-                        x={lungX}
-                        y={105}
-                        scaleX={0.2}
-                        scaleY={0.2}
-                        name="lungs"
-                        onClick={handleClick}
-                    />
-                </Layer>
-            </Stage> */}
