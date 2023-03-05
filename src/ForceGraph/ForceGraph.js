@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { useNavigate, useLocation } from 'react-router-dom';
 import './ForceGraph.css'
@@ -9,35 +9,11 @@ import { Button } from '@mui/material';
 
 
 
-
-
 export default function ForceGraph() {
-    // sample data
-    // "Attach (source) to (target)" for links
-    // Not sure if label is needed
-    const exampleData = {
-        nodes: [
-            { id: 'Protein 1', label: 'Protein' },
-            { id: 'Protein 2', label: 'Protein 2' },
-            { id: 'Protein 3', label: 'Protein 3' },
-            { id: 'Protein 4', label: 'Protein 4' },
-            { id: 'Protein 5', label: 'Protein 6' },
-            { id: 'Protein 6', label: 'Protein 7' },
-            { id: 'Protein 7', label: 'Protein 8' },
-            { id: 'Protein 8', label: 'Protein 9' },
-        ],
-        links: [
-            { source: 'Protein 1', target: 'Protein 2', value: 5 },
-            { source: 'Protein 2', target: 'Protein 3', value: 3 },
-            { source: 'Protein 4', target: 'Protein 3', value: 2 },
-            { source: 'Protein 2', target: 'Protein 5', value: 3 },
-            { source: 'Protein 8', target: 'Protein 5', value: 4 },
-            { source: 'Protein 7', target: 'Protein 5', value: 2 },
-            { source: 'Protein 6', target: 'Protein 8', value: 1 },
-        ]
-    }
 
     const [organName, setOrganName] = useState('');
+    const [subtype, setSubtype] = useState('');
+    const [subtypeBackend, setSubtypeBackend] = useState('');
 
     // So we can use react router
     const navigate = useNavigate();
@@ -45,7 +21,7 @@ export default function ForceGraph() {
     // To be used when a node is clicked
     const handleNodeClick = (node) => {
         console.log('Node has been clicked');
-        navigate('/protein-details', {state: {organName: organName}});
+        navigate('/protein-details', { state: { organName: organName } });
     };
 
     const location = useLocation();
@@ -54,10 +30,123 @@ export default function ForceGraph() {
         if (location) {
             console.log(location.state.organName);
             setOrganName(location.state.organName);
+            setSubtype(location.state.subtype)
+
+
         }
     }, [location])
+
+
+
+
+    /*
+     * File Reader
+     * This function is a text parser, importing cancer subtype genetic data 
+     */
+    async function appicFileReader(path) {
+        var fileData = "initial";
+
+        await fetch(path)
+            .then(response => response.text())
+            .then(data => {fileData = data})
+
+        //console.log(fileData)
+        return fileData
+    }
+
+
+    // Read data and build node networks
+    async function networkBuilder(organName, subtype) {
+
+        // Build path to files
+        var pathStringGS = "masterData/" + organName + "/" + subtype + "/" + subtype + "_geneSet.txt";
+        var pathStringGI = "masterData/" + organName + "/" + subtype + "/" + subtype + "_interactions.txt";
+    
+        console.log(pathStringGI)
+        // Read in genetic interaction (GI) and geneset (GS) data
+        var currGSFile = await appicFileReader(pathStringGS)
+        var gsArray = currGSFile.split("\n")
+        var currGIFile = await appicFileReader(pathStringGI)
+        var giArray = currGIFile = currGIFile.split("\n") //split by line
+
+
+        // Initiate datastructure to pass into react-force-graph
+        const myMapData = new Map()
+
+        // Parse content of text files. Build "links" for react-force-graph input
+        let currLinks = [];
+        for (let i = 1; i < giArray.length - 1; i++) {
+            // split by source, target, STRING
+            var miniGIArray = giArray[i].split("\t")
+
+            // Build object
+            let obj = { source: miniGIArray[0], target: miniGIArray[1], value: miniGIArray[2]/10}
+
+            // Add object to array
+            currLinks.push(obj)
+        }
+        // Add array to final map structure
+        myMapData["links"] = currLinks;
+
+        // Parse content of text files. Build "nodes" for react-force-graph input
+        let currNodes = [];
+        for (let i = 1; i < gsArray.length - 1; i++) {
+            // split by geneName, imputed/group, value
+            var miniGSArray = gsArray[i].split("\t")
+
+            // Build object
+            let obj = {id: miniGSArray[0], label: miniGSArray[0]}
+
+            // Add object to array
+            currNodes.push(obj)
+        }
+        // Add array to final map structure
+        myMapData["nodes"] = currNodes
+        
+
+        return myMapData;
+    }
+
+
+    // Execute functions in the proper order
+    // First define null variables such that the page can still load while back-end methods are running
+    // Then call back-end methods, and hand off to front end for display
+
+
+    // Define null variables
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    // useEffect will allow the back-end method "networkBuilder" to run after HTML loads
+    useEffect(() => {
+        // See above for networkBuilder
+        // Builds proper datastructure to pass into react-force-graph
+        // myMapData is a promise. It must compute before the HTML loads
+        const myMapData = networkBuilder(location.state.organName, location.state.subtype)
+        
+        // Set data
+        myMapData.then((data) => {
+            setData(data);
+            setIsLoading(false);
+        });
+    }, []);
     
 
+    const graphData = useMemo(() => {
+        if (data) {
+          return {
+            nodes: data.nodes,
+            links: data.links
+          };
+        }
+    }, [data]);
+
+    // If data is not present, show a loading screen
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    
+    // Final HTML return
     return (
         <div>
             <div className='button-div'>
@@ -69,12 +158,16 @@ export default function ForceGraph() {
                     Go back to body diagram
                 </Button>
             </div>
-            <h1 style={{marginTop: '5vh', marginBottom: '-10vh'}}>{organName} Cancer PPI Network</h1>
+            <div style={{display:'flex', justifyContent:"center"}}>
+                <h1 style={{ marginTop: '5vh', marginBottom: '-10vh', width: "60%" }}>{organName} ({subtype}) Cancer PPI Network</h1>
+            </div>
             <div class='container-fluid d-flex'>
                 <div className='col-md-9'>
                     <ForceGraph2D
-                        graphData={exampleData}
+                        graphData={graphData}
                         linkWidth={link => link.value}
+                        nodeSpacing={100}
+                        damping={0.9}
                         //nodeAutoColorBy="group"
                         nodeCanvasObject={(node, ctx, globalScale) => {
                             const label = node.id;
@@ -89,6 +182,7 @@ export default function ForceGraph() {
                             ctx.fillStyle = 'lightblue';
                             ctx.fill();
 
+                            // Node text styling
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             ctx.fillStyle = 'black';
