@@ -1,0 +1,16 @@
+.parent {
+    width: 100%;
+    position: absolute;
+    top: 30vh;
+}
+
+.layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.spacer {
+    padding: 10px
+}

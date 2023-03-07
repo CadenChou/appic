@@ -1,0 +1,28 @@
+.button-div {
+    /* display: flex;
+    align-self: left; */
+    padding-top: 10px;
+    padding-left: 10px;
+    height: 2vw;
+
+    padding-bottom: 5vh;
+}
+
+.divider-root {
+    display: grid;
+    grid-template-rows: 2fr 1fr;
+}
+
+.left {
+    /* background-color: blue;
+    color: white; */
+    flex: 2;
+    padding: 20px;
+}
+
+.right {
+    background-color: #e91e63;
+    color: white;
+    flex: 1;
+    padding: 20px;
+}
