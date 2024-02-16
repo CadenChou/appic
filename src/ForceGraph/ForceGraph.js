@@ -173,15 +173,18 @@ export default function ForceGraph() {
             }
         }
 
-        let filter = {
-            "where": {
-                "target": {
-                    "inq": myList
-                }
-            }
-        }
+        // Clueio moved to local data parsing. No longer needed. 
+        // let filter = {
+        //     "where": {
+        //         "target": {
+        //             "inq": myList
+        //         }
+        //     }
+        // }
         
-        const queryString = `filter=${(JSON.stringify(filter))}`;
+        // const queryString = `filter=${(JSON.stringify(filter))}`;
+
+        const queryString = myList;
 
         console.log(queryString)
 
@@ -189,7 +192,7 @@ export default function ForceGraph() {
     }, [data]);
 
     // Create API call
-    async function clueAPICall(geneList) {
+    async function clueAPICall(geneList) {       
         let searchURI = `https://api.clue.io/api/perts?` + geneList + `&user_key=814d4d42c94e6545cd37185ff4bf0270`
         // Note, this is Benjamin Ahn's unique API key!
         console.log(searchURI);
@@ -207,32 +210,124 @@ export default function ForceGraph() {
     const [isClueDataLoading, setClueDataLoading] = useState(true);
 
     // useEffect will allow the back-end method "networkBuilder" to run after HTML loads
+    //
+    // Clue.io api is not very reliable, but they have an option to download their drug repurposing
+    // data. Transitioning to local data and parsing method (Feb 2024, Benjamin Ahn)
+    //
+    // File Reader for clue data
+    async function ClueDataReader(path) {
+        var fileData = "initial";
+
+        await fetch(path)
+            .then(response => response.text())
+            .then(data => { fileData = data })
+
+        return fileData
+    }
+
+    // Build drug-genetarget map from local Clue data
+    async function ClueDrugTargetFinder() {
+        // Pick gene target and drug as a dictionary
+        // geneTarget is the key, mapped to an array consisting of drugs
+        const clue_geneTarget_drug_map = new Map();
+
+        // identify local clue data
+        var pathClueData = "Clueio_stable/repurposing_drugs_20180907.txt";
+        var currClueFile = "blank";
+        currClueFile = await ClueDataReader(pathClueData);
+        var clueArray = currClueFile.split("\n");
+            
+        for (let i=0; i < clueArray.length; i++) {
+            // iterrate through entire Clue doc. Find drug and corresponding gene target
+            var currDrugInfo = clueArray[i];
+
+            // split drug info by comma
+            var currDrugInfo_split = currDrugInfo.split(",");
+
+            // define drug and gene target
+            var currDrugName = currDrugInfo_split[0];
+            var currGeneTarget = currDrugInfo_split[3];
+
+            // gene targets need to be split
+            if (currGeneTarget != undefined && currDrugName != undefined) {
+                var currGeneTarget_split = currGeneTarget.split("|");
+
+                // add to map
+                for (let j = 0; j < currGeneTarget_split.length; j++) {
+                    currGeneTarget = currGeneTarget_split[j];
+
+                    // check that currGeneTarget isn't just a blank var
+                    if (currGeneTarget.length > 0) {
+                        // if genetarget is not in dict
+                        if (clue_geneTarget_drug_map.has(currGeneTarget)) {
+                            var currDrugArray_temp = clue_geneTarget_drug_map.get(currGeneTarget);
+                            currDrugArray_temp.push(currDrugName);
+                            clue_geneTarget_drug_map.set(currGeneTarget, currDrugArray_temp);
+
+                        } 
+                        // if genetarget has existing drugs, add drug to array
+                        else {
+                            var currDrugArray = new Array();
+                            currDrugArray.push(currDrugName);
+                            clue_geneTarget_drug_map.set(currGeneTarget, currDrugArray);
+                        }
+                    }
+                }
+                
+            }
+        }
+        return clue_geneTarget_drug_map;
+    }
+
     useEffect(() => {
         // See above for networkBuilder
         // Builds proper datastructure to pass into react-force-graph
         // myData is a promise. It must compute before the HTML loads
-        const myData = clueAPICall(geneList);
+        console.log(geneList);
+
+        const myClueData = ClueDrugTargetFinder();
+
+
 
         // Set clueData
-        myData.then((clueData) => {
-            console.log(clueData)
-            let myStringData = []
-            for (let i = 0; i < clueData.length; i++) {
-                let currResult = clueData[i]
+        myClueData.then((clueDataMap) => {
+            let myStringData = [] // stored as array of drug, gene name
 
-                let currDrug = currResult.pert_iname;
-
-                let currListOfGeneTargets = currResult.target
-                for (var j = 0; j < currListOfGeneTargets.length; j++){
-                    var currGeneTarget = currListOfGeneTargets[j]
-                    if (geneList.includes(currGeneTarget)) {
-                        // pull data
-                        myStringData.push(currResult.pert_iname) //drug name
-                        myStringData.push(currGeneTarget) //gene target
-                    }    
-                }
+            // parse through geneList. If a drug exists that targets the gene, find it
+            console.log(geneList);
+            for (let i = 0; i < geneList.length; i++) {
+                var currGene = geneList[i];
                 
+                // if the gene is in the map, then find the drug
+                if (clueDataMap.has(currGene)) {
+                    var arrayOfDrugs = clueDataMap.get(currGene);
+
+                    for (let j = 0; j < arrayOfDrugs.length; j++) {
+                        var currDrug = arrayOfDrugs[j];
+                        myStringData.push(currDrug);
+                        myStringData.push(currGene);
+                    }
+                }
+
             }
+
+            // for (let i = 0; i < clueData.length; i++) {
+            //     let currResult = clueData[i]
+
+            //     let currDrug = currResult.pert_iname;
+
+            //     let currListOfGeneTargets = currResult.target
+            //     for (var j = 0; j < currListOfGeneTargets.length; j++){
+            //         var currGeneTarget = currListOfGeneTargets[j]
+            //         if (geneList.includes(currGeneTarget)) {
+            //             // pull data
+            //             myStringData.push(currResult.pert_iname) //drug name
+            //             myStringData.push(currGeneTarget) //gene target
+            //         }    
+            //     }
+                
+            // }
+
             setClueData(myStringData);
             setClueDataLoading(true);
             console.log(myStringData);
